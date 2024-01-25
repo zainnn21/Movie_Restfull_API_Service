@@ -80,6 +80,7 @@ public class MovieController {
             @RequestBody Movie movie) {
         Optional<Movie> movieData = movieRepository.findById(id);
         if(movieData.isPresent()){
+            System.out.println(id);
             Movie updateMovie = movieData.get();
             updateMovie.setTitle(movie.getTitle());
             updateMovie.setDescription(movie.getDescription());
