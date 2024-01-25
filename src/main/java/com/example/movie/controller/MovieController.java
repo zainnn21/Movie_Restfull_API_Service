@@ -8,9 +8,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @RestController
 @RequestMapping("/api")
@@ -19,7 +19,11 @@ public class MovieController {
     @Autowired
     private MovieRepository movieRepository;
 
-    @GetMapping("/Movie")
+    private void ApiError() {
+        LocalDateTime timestamp = LocalDateTime.now();
+    }
+
+    @GetMapping("/Movies")
     public ResponseEntity <List<Movie>> findAll(
             @RequestParam(name = "title",
             required = false,
@@ -42,18 +46,22 @@ public class MovieController {
 
     @GetMapping("/Movies/{id}")
     public ResponseEntity<Movie>findById(
-            @PathVariable("id") String id) {
+            @PathVariable Integer id) {
         Optional<Movie> movieData = movieRepository.findById(id);
-
-        return movieData.map(movie -> new ResponseEntity<>(movie, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        System.out.println(id);
+        if ( movieData.isPresent()){
+            return new ResponseEntity<>(movieData.get(),HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
-    @PostMapping("/Movie")
+    @PostMapping("/Movies")
     public ResponseEntity<Movie> create(
             @RequestBody Movie movie){
         try {
             Movie newMovie = new Movie();
-            newMovie.setId(1L);
+            newMovie.setId(movie.getId());
             newMovie.setTitle(movie.getTitle());
             newMovie.setDescription(movie.getDescription());
             newMovie.setRating(movie.getRating());
@@ -66,11 +74,11 @@ public class MovieController {
         }
     }
 
-    @PutMapping("/Movie/id")
+    @PutMapping("/Movies/{id}")
     public ResponseEntity<Movie> update(
-            @PathVariable("id")Long id,
+            @PathVariable Integer id,
             @RequestBody Movie movie) {
-        Optional<Movie> movieData = movieRepository.findById(String.valueOf(id));
+        Optional<Movie> movieData = movieRepository.findById(id);
         if(movieData.isPresent()){
             Movie updateMovie = movieData.get();
             updateMovie.setTitle(movie.getTitle());
@@ -85,9 +93,9 @@ public class MovieController {
         }
     }
 
-    @DeleteMapping("/movie/{id}")
+    @DeleteMapping("/Movies/{id}")
     public ResponseEntity<HttpStatus> delete(
-            @PathVariable("id") String id){
+            @PathVariable Integer id){
         try {
             movieRepository.deleteById(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
